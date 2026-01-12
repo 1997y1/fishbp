@@ -1,11 +1,739 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello World</title>
-</head>
-<body>
-    <h1>Hello World</h1>
-</body>
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fish BP03｜MESHTASTIC 离网通信器｜LoRa 节点</title>
+    <meta
+      name="description"
+      content="Fish BP03（歪玩無線機〇叁）是一款小巧、功能丰富的物联网无线开发平台，适合 Meshtastic、LoRa 网关、BLE 网关、IoT 智能节点等项目。"
+    />
+    <style>
+      :root {
+        --bg: #0b0d12;
+        --panel: rgba(255, 255, 255, 0.06);
+        --panel-2: rgba(255, 255, 255, 0.1);
+        --text: rgba(255, 255, 255, 0.92);
+        --muted: rgba(255, 255, 255, 0.72);
+        --muted-2: rgba(255, 255, 255, 0.58);
+        --border: rgba(255, 255, 255, 0.12);
+        --primary: #7cf3c4;
+        --primary-2: #5ce1ff;
+        --shadow: 0 16px 70px rgba(0, 0, 0, 0.55);
+        --radius: 18px;
+        --radius-sm: 12px;
+        --max: 1080px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, "Noto Sans CJK SC",
+          sans-serif;
+        color: var(--text);
+        background: radial-gradient(1200px 600px at 20% 0%, rgba(124, 243, 196, 0.16), transparent 60%),
+          radial-gradient(900px 500px at 80% 10%, rgba(92, 225, 255, 0.14), transparent 55%),
+          radial-gradient(900px 600px at 50% 100%, rgba(255, 255, 255, 0.06), transparent 55%),
+          var(--bg);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .container {
+        width: 100%;
+        max-width: var(--max);
+        margin: 0 auto;
+        padding: 0 18px;
+      }
+
+      .nav {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        backdrop-filter: blur(12px);
+        background: linear-gradient(to bottom, rgba(11, 13, 18, 0.9), rgba(11, 13, 18, 0.55));
+        border-bottom: 1px solid var(--border);
+      }
+
+      .nav-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 12px 0;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .badge {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, rgba(124, 243, 196, 0.35), rgba(92, 225, 255, 0.28));
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+      }
+
+      .brand-title {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+      }
+
+      .brand-title strong {
+        font-size: 14px;
+        letter-spacing: 0.2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .brand-title span {
+        font-size: 12px;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .nav-links a {
+        padding: 8px 10px;
+        border-radius: 10px;
+        border: 1px solid transparent;
+      }
+
+      .nav-links a:hover {
+        color: var(--text);
+        border-color: var(--border);
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .hero {
+        padding: 42px 0 22px;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 18px;
+        align-items: stretch;
+      }
+
+      @media (max-width: 920px) {
+        .hero-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .card {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .card-inner {
+        padding: 20px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .pill i {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary), var(--primary-2));
+        box-shadow: 0 0 0 4px rgba(124, 243, 196, 0.12);
+      }
+
+      h1 {
+        margin: 14px 0 10px;
+        line-height: 1.1;
+        font-size: 40px;
+        letter-spacing: -0.6px;
+      }
+
+      @media (max-width: 520px) {
+        h1 {
+          font-size: 32px;
+        }
+      }
+
+      .subtitle {
+        margin: 0;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.7;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text);
+        font-size: 14px;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .btn.primary {
+        border-color: rgba(124, 243, 196, 0.45);
+        background: linear-gradient(135deg, rgba(124, 243, 196, 0.22), rgba(92, 225, 255, 0.16));
+      }
+
+      .btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      @media (max-width: 520px) {
+        .stats {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .stat {
+        padding: 12px 12px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .stat strong {
+        display: block;
+        font-size: 14px;
+        margin-bottom: 4px;
+      }
+
+      .stat span {
+        display: block;
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .media {
+        position: relative;
+        height: 100%;
+        min-height: 360px;
+        background: radial-gradient(900px 300px at 50% 0%, rgba(124, 243, 196, 0.16), transparent 60%),
+          linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+      }
+
+      @media (max-width: 920px) {
+        .media {
+          min-height: 320px;
+        }
+      }
+
+      .media-inner {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 18px;
+      }
+
+      .placeholder {
+        border-radius: 16px;
+        border: 1px dashed rgba(255, 255, 255, 0.22);
+        background: rgba(255, 255, 255, 0.04);
+        display: grid;
+        place-items: center;
+        text-align: center;
+        padding: 18px;
+        min-height: 220px;
+      }
+
+      .placeholder strong {
+        font-size: 15px;
+        margin-bottom: 6px;
+      }
+
+      .placeholder span {
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .media-notes {
+        display: grid;
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      .note {
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.04);
+        padding: 12px 12px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.6;
+      }
+
+      .section {
+        padding: 26px 0;
+      }
+
+      .section h2 {
+        margin: 0 0 12px;
+        font-size: 20px;
+        letter-spacing: -0.2px;
+      }
+
+      .section p.lead {
+        margin: 0 0 14px;
+        color: var(--muted);
+        line-height: 1.8;
+        font-size: 14px;
+      }
+
+      .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+
+      @media (max-width: 860px) {
+        .grid-3 {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .item {
+        border-radius: var(--radius);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.04);
+        padding: 16px;
+      }
+
+      .item h3 {
+        margin: 0 0 6px;
+        font-size: 15px;
+      }
+
+      .item p {
+        margin: 0;
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.8;
+      }
+
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      @media (max-width: 860px) {
+        .two-col {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .list {
+        margin: 0;
+        padding-left: 18px;
+        color: var(--muted);
+        line-height: 1.9;
+        font-size: 13px;
+      }
+
+      .kvs {
+        display: grid;
+        gap: 10px;
+      }
+
+      .kv {
+        display: flex;
+        gap: 10px;
+        align-items: baseline;
+        padding: 12px;
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.04);
+      }
+
+      .kv b {
+        min-width: 138px;
+        font-size: 13px;
+      }
+
+      .kv span {
+        font-size: 13px;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      @media (max-width: 520px) {
+        .kv {
+          flex-direction: column;
+        }
+        .kv b {
+          min-width: 0;
+        }
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        overflow: hidden;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.03);
+      }
+
+      th,
+      td {
+        padding: 12px 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        text-align: left;
+        font-size: 13px;
+      }
+
+      th {
+        color: rgba(255, 255, 255, 0.86);
+        font-weight: 600;
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      td {
+        color: var(--muted);
+      }
+
+      tr:last-child td {
+        border-bottom: none;
+      }
+
+      .callout {
+        border-radius: var(--radius);
+        border: 1px solid rgba(124, 243, 196, 0.22);
+        background: linear-gradient(135deg, rgba(124, 243, 196, 0.12), rgba(92, 225, 255, 0.08));
+        padding: 16px;
+        color: rgba(255, 255, 255, 0.85);
+        line-height: 1.8;
+        font-size: 13px;
+      }
+
+      .footer {
+        padding: 24px 0 40px;
+        color: var(--muted-2);
+        font-size: 12px;
+      }
+
+      .footer a {
+        color: var(--muted);
+        border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+      }
+    </style>
+  </head>
+  <body>
+    <header class="nav">
+      <div class="container">
+        <div class="nav-inner">
+          <div class="brand">
+            <div class="badge" aria-hidden="true"></div>
+            <div class="brand-title">
+              <strong>Fish BP03｜歪玩無線機〇叁</strong>
+              <span>MESHTASTIC / LoRa / BLE / IoT 开发平台</span>
+            </div>
+          </div>
+          <nav class="nav-links" aria-label="页面导航">
+            <a href="#features">亮点</a>
+            <a href="#scenarios">场景</a>
+            <a href="#specs">规格</a>
+            <a href="#package">清单</a>
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="container">
+          <div class="hero-grid">
+            <div class="card">
+              <div class="card-inner">
+                <div class="pill"><i aria-hidden="true"></i><span>离网去中心化网状网络 · 低功耗 · EDC</span></div>
+                <h1>手持 33S / 离网通信器<br />户外小队与生存主义的通信方案</h1>
+                <p class="subtitle">
+                  BP03 开发板是一款小巧、功能丰富的物联网无线开发平台，适合开发 Meshtastic、LoRa
+                  网关、BLE 网关、IoT 智能节点等项目。脱离互联网，在范围内进行文字群聊与私信，多节点跳跃扩大连通距离。
+                </p>
+
+                <div class="hero-actions">
+                  <a class="btn primary" href="#specs">查看规格</a>
+                  <a class="btn" href="#scenarios">使用场景</a>
+                  <a class="btn" href="#package">发货清单</a>
+                </div>
+
+                <div class="stats" role="list">
+                  <div class="stat" role="listitem">
+                    <strong>运行固件</strong>
+                    <span>Meshtastic</span>
+                  </div>
+                  <div class="stat" role="listitem">
+                    <strong>计算模块</strong>
+                    <span>ESP32-C3</span>
+                  </div>
+                  <div class="stat" role="listitem">
+                    <strong>频段</strong>
+                    <span>470–510MHz（模块可选）</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <aside class="card media" aria-label="图片展示区">
+              <div class="media-inner">
+                <div class="placeholder">
+                  <div>
+                    <strong>图片占位（请替换）</strong>
+                    <span>
+                      把这里替换成产品主图 / 细节图 / 场景图。<br />
+                      你可以直接在此处放入 &lt;img&gt; 或用背景图实现。
+                    </span>
+                  </div>
+                </div>
+                <div class="media-notes">
+                  <div class="note">
+                    提示：如果你准备放多张图，可以做成 3 张小图拼接、或主图 + 两张细节图的排版。
+                  </div>
+                  <div class="note">
+                    PS：展示图片中使用充电宝 + 魔术贴连接，战术感拉满。
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <section id="features" class="section">
+        <div class="container">
+          <h2>核心亮点</h2>
+          <p class="lead">
+            面向户外与“脱离系统”的稳定通信需求：不依赖运营商与公共基础设施，基于 LoRa 物理层，自组网状网络。
+          </p>
+          <div class="grid-3">
+            <div class="item">
+              <h3>离网文字通信</h3>
+              <p>范围内群聊/私信，复杂信息准确传达，比喊话更清晰，比手台更私密。</p>
+            </div>
+            <div class="item">
+              <h3>多节点跳跃扩展距离</h3>
+              <p>多台设备自动组成 Mesh 网络，节点损坏可自动寻路，网络更“抗打”。</p>
+            </div>
+            <div class="item">
+              <h3>开发平台属性</h3>
+              <p>用于 Meshtastic、LoRa 网关、BLE 网关、IoT 智能节点等项目，灵活扩展。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="scenarios" class="section">
+        <div class="container">
+          <h2>使用场景</h2>
+          <p class="lead">致敬户外探险爱好者与末日生存爱好者：安静，但存在即意味着可能。</p>
+          <div class="two-col">
+            <div class="item">
+              <h3>户外探险 / 徒步登山</h3>
+              <ul class="list">
+                <li>前后队拉开距离，随时通联，避免失联与误判。</li>
+                <li>复杂岔路口快速共享方位与路线信息。</li>
+                <li>露营分散活动，静默沟通不打扰自然。</li>
+              </ul>
+            </div>
+            <div class="item">
+              <h3>应急与生存主义准备</h3>
+              <ul class="list">
+                <li>不依赖 SIM 卡、运营商与互联网，基于 LoRa 自成网络。</li>
+                <li>私有频道点对点加密通信（能力取决于固件配置与使用方式）。</li>
+                <li>多设备组网扩展范围，一个节点故障信息自动改道。</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="specs" class="section">
+        <div class="container">
+          <h2>规格与版本</h2>
+          <div class="two-col">
+            <div class="kvs">
+              <div class="kv"><b>设备中文</b><span>歪玩無線機〇叁</span></div>
+              <div class="kv"><b>设备英文</b><span>Fish BP03</span></div>
+              <div class="kv"><b>板版本号</b><span>LoRa PCB - Fish BP DEV 26.1</span></div>
+              <div class="kv"><b>运行固件</b><span>Meshtastic</span></div>
+              <div class="kv"><b>计算模块</b><span>ESP32-C3</span></div>
+              <div class="kv">
+                <b>发射模块（470–510MHz）</b>
+                <span>33S：E22-400M33S · 22S：HT-RA62</span>
+              </div>
+            </div>
+            <div class="item">
+              <h3>【参考值】可视连通距离</h3>
+              <p style="margin: 0 0 12px; color: rgba(255, 255, 255, 0.7); font-size: 13px; line-height: 1.8">
+                连通距离与环境密切相关：城市遮挡多、空中噪声大，类似 Wi‑Fi 的穿墙衰减。
+              </p>
+              <table aria-label="参考连通距离表">
+                <thead>
+                  <tr>
+                    <th>型号</th>
+                    <th>参考可视距离</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>17S</td>
+                    <td>约 10km 或更远</td>
+                  </tr>
+                  <tr>
+                    <td>22S</td>
+                    <td>约 20km 或更远</td>
+                  </tr>
+                  <tr>
+                    <td>29S</td>
+                    <td>约 40km 或更远</td>
+                  </tr>
+                  <tr>
+                    <td>30S</td>
+                    <td>约 50km 或更远</td>
+                  </tr>
+                  <tr>
+                    <td>33S</td>
+                    <td>约 80km 或更远</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="package" class="section">
+        <div class="container">
+          <h2>发货清单</h2>
+          <div class="two-col">
+            <div class="item">
+              <h3>包含内容</h3>
+              <ul class="list">
+                <li>开发板 × 1</li>
+                <li>3D 打印外壳 × 1</li>
+              </ul>
+            </div>
+            <div class="callout">
+              “两份即一份，一份即没有”。当你为不确定性做准备，这是一条独立的、物理层面的通信保障。
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container">
+          <div class="card">
+            <div class="card-inner">
+              <h2 style="margin: 0 0 10px">图片位建议（你替换即可）</h2>
+              <p class="lead" style="margin-bottom: 10px">
+                推荐准备：主图（设备正面）+ 细节图（接口/模组）+ 场景图（户外使用）+ 配件图（外壳/清单）。
+              </p>
+              <div class="grid-3" style="margin-top: 12px">
+                <div class="placeholder">
+                  <div>
+                    <strong>主图</strong>
+                    <span>设备整体外观</span>
+                  </div>
+                </div>
+                <div class="placeholder">
+                  <div>
+                    <strong>细节图</strong>
+                    <span>模组/接口/外壳</span>
+                  </div>
+                </div>
+                <div class="placeholder">
+                  <div>
+                    <strong>场景图</strong>
+                    <span>徒步/登山/露营</span>
+                  </div>
+                </div>
+              </div>
+              <div style="margin-top: 14px; display: flex; gap: 10px; flex-wrap: wrap">
+                <a class="btn primary" href="#features">回到亮点</a>
+                <a class="btn" href="#specs">回到规格</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <div style="display: flex; gap: 14px; flex-wrap: wrap; align-items: center; justify-content: space-between">
+          <div>© Fish BP03 · Meshtastic / LoRa 离网通信器</div>
+          <div>
+            <a href="https://github.com/1997y1/fishbp" target="_blank" rel="noreferrer">GitHub</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </body>
 </html>
